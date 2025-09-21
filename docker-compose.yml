@@ -1,19 +1,14 @@
 version: '3.8'
 
 services:
-  crypto-prices:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  crypto_precos:
+    build: .
     volumes:
-      - crypto-data:/data
-    environment:
-      - NFS_SERVER=192.168.1.197
-      - NFS_PATH=/export/Dados/NAS
-    restart: always
+      - nas:/mnt/nas
+    restart: unless-stopped
 
 volumes:
-  crypto-data:
+  nas:
     driver: local
     driver_opts:
       type: nfs
