@@ -3,6 +3,7 @@ import json
 import time
 import logging
 import sys
+import os
 
 # Lista de símbolos das criptomoedas que você quer rastrear
 # A chave é o símbolo que você usou (ex: 'BTC') e o valor é o nome da API da CoinGecko
@@ -26,6 +27,7 @@ API_URL = "https://api.coingecko.com/api/v3/simple/price"
 precos_atuais = {}
 
 NFS_PATH = '/mnt/nas/precos_cripto.json'  # Caminho onde o NFS será montado no container
+TEMP_PATH = NFS_PATH + ".tmp"
 
 logging.basicConfig(
     level=logging.INFO,
@@ -68,10 +70,19 @@ def obter_precos():
         logging.error(f"Erro na requisição: {e}")
 
 def salvar_json(dados):
-    """Função para salvar os dados em um arquivo JSON no NFS."""
+    """Função para salvar os dados em um arquivo JSON de forma segura."""
     try:
-        with open(NFS_PATH, 'w') as f:
+        # 1. Salva os dados em um arquivo temporário
+        with open(TEMP_PATH, 'w') as f:
             json.dump(dados, f, indent=4)
+        
+        # 2. Apaga o arquivo original (se existir)
+        if os.path.exists(NFS_PATH):
+            os.remove(NFS_PATH)
+            
+        # 3. Renomeia o arquivo temporário para o nome final
+        os.rename(TEMP_PATH, NFS_PATH)
+        
         logging.info(f"Arquivo '{NFS_PATH}' atualizado com sucesso.")
     except IOError as e:
         logging.error(f"Erro ao salvar o arquivo: {e}")
